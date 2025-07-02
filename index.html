@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP Rules MDC 샘플</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f7f7f7; margin: 0; }
+    .container { max-width: 800px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #0001; padding: 32px 24px; }
+    h1 { text-align: center; color: #2d6cdf; }
+    .tabs { display: flex; justify-content: center; margin-bottom: 24px; }
+    .tab-btn { background: #e6eaf3; border: none; border-radius: 8px 8px 0 0; padding: 12px 32px; margin: 0 2px; font-size: 1.1rem; cursor: pointer; color: #2d6cdf; font-weight: bold; }
+    .tab-btn.active { background: #2d6cdf; color: #fff; }
+    .mdc-content { background: #f8fafd; border-radius: 0 0 8px 8px; padding: 24px; min-height: 320px; }
+    @media (max-width: 900px) { .container { padding: 10px 2px; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MCP Rules MDC 샘플</h1>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab(0)">공통 규칙</button>
+      <button class="tab-btn" onclick="showTab(1)">프론트엔드</button>
+      <button class="tab-btn" onclick="showTab(2)">백엔드(Java Spring)</button>
+    </div>
+    <div class="mdc-content" id="mdcContent">로딩 중...</div>
+  </div>
+  <script>
+    const files = [
+      'mdc-common.md',
+      'mdc-frontend.md',
+      'mdc-backend.md'
+    ];
+    let cache = [null, null, null];
+    async function showTab(idx) {
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === idx);
+      });
+      const content = document.getElementById('mdcContent');
+      content.innerHTML = '로딩 중...';
+      if (cache[idx]) {
+        content.innerHTML = cache[idx];
+        return;
+      }
+      const res = await fetch(files[idx]);
+      const md = await res.text();
+      // 간단한 마크다운 변환 (제목, 리스트, 코드블록, 강조)
+      let html = md
+        .replace(/^# (.*)$/gm, '<h2>$1</h2>')
+        .replace(/^## (.*)$/gm, '<h3>$1</h3>')
+        .replace(/^### (.*)$/gm, '<h4>$1</h4>')
+        .replace(/^\- (.*)$/gm, '<li>$1</li>')
+        .replace(/\n<li>/g, '<ul><li>')
+        .replace(/<\/li>\n/g, '</li>')
+        .replace(/<li>(.*?)<\/li>/gs, '<ul><li>$1</li></ul>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        .replace(/\n/g, '<br>');
+      content.innerHTML = html;
+      cache[idx] = html;
+    }
+    showTab(0);
+  </script>
+</body>
+</html>
